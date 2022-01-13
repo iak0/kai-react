@@ -10,14 +10,6 @@ function App() {
         <p>
           This is Kai's React app!
         </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
         <Timer/>
       </header>
     </div>
@@ -27,10 +19,20 @@ function App() {
 class Timer extends React.Component {
   constructor() {
     super();
-    this.state = { time: {}, seconds: 600 };
+    let defaultNumPlayers = 3;
+    let initialSeconds = 600;
+    this.state = { 
+      numPlayers: defaultNumPlayers, 
+      initialSeconds: initialSeconds,
+      currentPlayer: 0,
+      players: this.makePlayers(defaultNumPlayers, initialSeconds),
+    };
     this.timer = 0;
-    this.toggleTimer = this.toggleTimer.bind(this);
+    this.startTimer = this.startTimer.bind(this);
     this.countDown = this.countDown.bind(this);
+    this.numPlayersChange = this.numPlayersChange.bind(this);
+    this.initialTimeChange = this.initialTimeChange.bind(this);
+    this.switchPlayer = this.switchPlayer.bind(this);
   }
 
   secondsToTime(secs){
@@ -50,26 +52,48 @@ class Timer extends React.Component {
     return obj;
   }
 
+  makeState(defaultNumPlayers, initialSeconds) {
+    return { 
+      numPlayers: defaultNumPlayers, 
+      initialSeconds: initialSeconds,
+      currentPlayer: 0,
+      players: this.makePlayers(defaultNumPlayers, initialSeconds),
+    }
+  }
+
+  makePlayers(numPlayers, initialSeconds) {
+    let players = [];
+    for (let i = 0; i < numPlayers; i++) {
+      players = players.concat({
+        seconds: initialSeconds,
+      })
+    } 
+    return players;
+  }
+
   componentDidMount() {
     let timeLeftVar = this.secondsToTime(this.state.seconds);
     this.setState({ time: timeLeftVar });
   }
 
-  toggleTimer() {
-    if (this.timer == 0 && this.state.seconds > 0) {
+  startTimer() {
+    this.setState(this.makeState(this.numPlayers, this.initialSeconds))
+    if (this.timer == 0) {
       this.timer = setInterval(this.countDown, 1000);
     } else {
       clearInterval(this.timer);
+      this.timer = 0;
     }
   }
 
   countDown() {
     // Remove one second, set state so a re-render happens.
-    let seconds = this.state.seconds - 1;
+    let seconds = this.state.players[this.state.currentPlayer].seconds - 1;
+
+    this.state.players[this.state.currentPlayer].seconds = seconds;
 
     this.setState({
-      time: this.secondsToTime(seconds),
-      seconds: seconds,
+      players: this.state.players,
     });
     
     // Check if we're at zero.
@@ -78,25 +102,87 @@ class Timer extends React.Component {
     }
   }
 
+  numPlayersChange(event) {
+    this.setState({ numPlayers: parseInt(event.target.value) });
+  }
+
+  initialTimeChange(event) {
+    this.setState({ initialSeconds: parseInt(event.target.value) * 60 });
+  }
+
+  switchPlayer() {
+    let nextPlayer = (this.state.currentPlayer + 1) % this.state.numPlayers;
+    this.setState({ currentPlayer: nextPlayer });
+  }
+
+  /*
+  this.state: {
+    players: [
+      {
+        seconds: 600,
+      },
+      {
+        seconds: 600,
+      },
+      {
+        seconds: 600,
+      },
+      {
+        seconds: 600,
+      }
+    ]
+    currentPlayer: 3,
+    numPlayers: 4
+  }
+
+  players = []
+  for ( 4 times ) {
+    players.append {
+      seconds: beginningSeconds
+    }
+  }
+
+  this.state.players[currentPlayer].seconds
+
+  this.timer: every second, subtract 1 from the current player's seconds
+
+  we'll also need buttons for incrementing the currentPlayer to the next player
+
+  */
   render() {
-    return(
+    console.log(this.state);
+    return (
       <div>
+        <b>Number of players: </b>
+        <select defaultValue="3" onChange={this.numPlayersChange}>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
+        </select>
+        <br/>
+        <b>Initial timer: </b>
+        <select defaultValue="10" onChange={this.timeChange}>
+          <option value="5">5</option>
+          <option value="10">10</option>
+          <option value="15">15</option>
+          <option value="20">20</option>
+        </select>
+        <br/>
+        <button onClick={this.startTimer}>Start</button>
+
+        <br/><br/>
         <div>
-          <button onClick={this.toggleTimer}>Start</button>
-          m: {this.state.time.m} s: {this.state.time.s}
+          {this.state.players.map((player, i) => {
+            return <div key={i}>
+                Player {i} seconds: {player.seconds}
+              </div>
+          })}
         </div>
-        <div>
-          <button onClick={this.toggleTimer}>Start</button>
-          m: {this.state.time.m} s: {this.state.time.s}
-        </div>
-        <div>
-          <button onClick={this.toggleTimer}>Start</button>
-          m: {this.state.time.m} s: {this.state.time.s}
-        </div>
+        <button onClick={this.switchPlayer}>Next Player</button>
       </div>
     );
   }
 }
-
 
 export default App;
