@@ -36,20 +36,13 @@ class Timer extends React.Component {
   }
 
   secondsToTime(secs){
-    let hours = Math.floor(secs / (60 * 60));
+    let minutes = Math.floor(secs / 60);
+    let seconds = secs - (minutes * 60);
 
-    let divisor_for_minutes = secs % (60 * 60);
-    let minutes = Math.floor(divisor_for_minutes / 60);
-
-    let divisor_for_seconds = divisor_for_minutes % 60;
-    let seconds = Math.ceil(divisor_for_seconds);
-
-    let obj = {
-      "h": hours,
-      "m": minutes,
-      "s": seconds
-    };
-    return obj;
+    if (seconds < 10) {
+      seconds = "0" + seconds;
+    }
+    return `${minutes}:${seconds}`;
   }
 
   makeState(defaultNumPlayers, initialSeconds) {
@@ -72,12 +65,11 @@ class Timer extends React.Component {
   }
 
   componentDidMount() {
-    let timeLeftVar = this.secondsToTime(this.state.seconds);
-    this.setState({ time: timeLeftVar });
+    
   }
 
   startTimer() {
-    this.setState(this.makeState(this.numPlayers, this.initialSeconds))
+    // this.setState(this.makeState(this.numPlayers, this.initialSeconds))
     if (this.timer == 0) {
       this.timer = setInterval(this.countDown, 1000);
     } else {
@@ -162,23 +154,21 @@ class Timer extends React.Component {
         </select>
         <br/>
         <b>Initial timer: </b>
-        <select defaultValue="10" onChange={this.timeChange}>
+        <select defaultValue="10" onChange={this.initialTimeChange}>
           <option value="5">5</option>
           <option value="10">10</option>
           <option value="15">15</option>
           <option value="20">20</option>
         </select>
-        <br/>
-        <button onClick={this.startTimer}>Start</button>
-
         <br/><br/>
         <div>
           {this.state.players.map((player, i) => {
             return <div key={i}>
-                Player {i} seconds: {player.seconds}
+                Player {i}: {this.secondsToTime(player.seconds)}
               </div>
           })}
         </div>
+        <button onClick={this.startTimer}>Start</button>
         <button onClick={this.switchPlayer}>Next Player</button>
       </div>
     );
