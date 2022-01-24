@@ -1,6 +1,9 @@
 import logo from './logo.svg';
 import './App.css';
 import React from 'react';
+import Button from '@mui/material/Button';
+
+const COLORS = ["#f88", "#8f8", "#88f"];
 
 function App() {
   return (
@@ -8,10 +11,12 @@ function App() {
       <header className="App-header">
         <img src={logo} className="App-logo" alt="logo" />
         <p>
-          This is Kai's React app!
+          Board Game Timer
         </p>
-        <Timer/>
       </header>
+      <div className='App-body'>
+        <Timer/>
+      </div>
     </div>
   );
 }
@@ -44,6 +49,8 @@ class Timer extends React.Component {
       initialSeconds: initialSeconds,
       currentPlayer: 0,
       players: this.makePlayers(defaultNumPlayers, initialSeconds),
+      screen: 1,
+      timerActive: false,
     };
     this.timer = null; 
     this.createTimers = this.createTimers.bind(this);
@@ -58,9 +65,15 @@ class Timer extends React.Component {
    * Converts an integer number of seconds into a string in the MM:SS format.
    */
   secondsToTime(secs){
+    // If negative, just call the same function on the positive version of the number, and append a negative sign
+    if (secs < 0) {
+      return "-" + this.secondsToTime(-secs);
+    }
+
     let minutes = Math.floor(secs / 60);
     let seconds = secs - (minutes * 60);
 
+    seconds = seconds.toFixed(2)
     if (seconds < 10) {
       seconds = "0" + seconds;
     }
@@ -81,6 +94,7 @@ class Timer extends React.Component {
     for (let i = 0; i < numPlayers; i++) {
       players = players.concat({
         seconds: initialSeconds,
+        color: COLORS[i],
       })
     } 
     return players;
@@ -95,7 +109,8 @@ class Timer extends React.Component {
    */ 
   createTimers() {
     this.setState({
-      players: this.makePlayers(this.state.numPlayers, this.state.initialSeconds)
+      players: this.makePlayers(this.state.numPlayers, this.state.initialSeconds),
+      screen: 2,
     });
   }
 
@@ -108,11 +123,13 @@ class Timer extends React.Component {
     // TODO: prevent timer from being started if any of the players' times is <= 0
     if (this.timer == null) {
       // starts calling this.countdown() every second
-      this.timer = setInterval(this.countDown, 1000); 
+      this.timer = setInterval(this.countDown, 10); 
+      this.setState({timerActive: true});
     } else {
       // stop calling this.countdown() every second
       clearInterval(this.timer);
       this.timer = null;
+      this.setState({timerActive: false});
     }
   }
 
@@ -122,7 +139,7 @@ class Timer extends React.Component {
   countDown() {
     // Remove one second
     let players = this.state.players
-    let seconds = players[this.state.currentPlayer].seconds - 1;
+    let seconds = players[this.state.currentPlayer].seconds - 0.01;
 
     players[this.state.currentPlayer].seconds = seconds;
 
@@ -161,39 +178,53 @@ class Timer extends React.Component {
 
   render() {
     console.log(this.state);
-    return (
-      <div>
-        <b>Number of players: </b>
-        <select defaultValue="3" onChange={this.numPlayersChange}>
-          <option value="2">2</option>
-          <option value="3">3</option>
-          <option value="4">4</option>
-          <option value="5">5</option>
-        </select>
-        <br/>
-        <b>Initial timer: </b>
-        <select defaultValue="10" onChange={this.initialTimeChange}>
-          <option value="1">1</option>
-          <option value="5">5</option>
-          <option value="10">10</option>
-          <option value="15">15</option>
-          <option value="20">20</option>
-        </select>
-        <br/>
-        <button onClick={this.createTimers}>Create Timers</button>
-        <br/><br/>
-        <div>
-          {this.state.players.map((player, i) => {
-            return <div key={i}>
-                Player {i}: {this.secondsToTime(player.seconds)}
-              </div>
-          })}
+    if (this.state.screen === 1) {
+      return (
+        <div className="wrapper">
+          <div className="form-wrapper">
+            <div className="form">
+              <b>Number of players: </b>
+              <select defaultValue="3" onChange={this.numPlayersChange}>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+              </select>
+              <br />
+              <b>Initial timer: </b>
+              <select defaultValue="10" onChange={this.initialTimeChange}>
+                <option value="0.5">0.5</option>
+                <option value="1">1</option>
+                <option value="5">5</option>
+                <option value="10">10</option>
+                <option value="15">15</option>
+                <option value="20">20</option>
+              </select>
+            </div>
+          
+          <Button className="button" variant="contained" onClick={this.createTimers}>Create Timers</Button>
+          </div>
         </div>
-        <button onClick={this.toggleTimer}>Start/Pause/Resume</button>
-        <br/>
-        <button onClick={this.switchPlayer}>Next Player</button>
-      </div>
-    );
+      );
+    } 
+    else if (this.state.screen === 2) {
+      return (
+        <div className="timer-wrapper">
+            {this.state.players.map((player, i) => {
+              return <div key={i} 
+                          className={i === this.state.currentPlayer ? "selected" : "unselected"} 
+                          style={{backgroundColor: player.color}}
+                          onClick={this.switchPlayer}>
+                  Player {i+1}: {this.secondsToTime(player.seconds)}
+                </div>
+            })}
+          <div>
+            <Button variant="contained" onClick={this.toggleTimer}>{this.state.timerActive ? "Pause" : "Start"}</Button>
+            <Button variant="contained" onClick={this.switchPlayer}>Next Player</Button>
+          </div>
+        </div> 
+      );
+    }
   }
 }
 
