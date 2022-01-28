@@ -2,8 +2,14 @@ import logo from './logo.svg';
 import './App.css';
 import React from 'react';
 import Button from '@mui/material/Button';
+import Fab from '@mui/material/Fab';
 
-const COLORS = ["#f88", "#8f8", "#88f"];
+// const COLORS = ["#f88", "#8f8", "#88f", "#ff8", "#f8f"];
+
+function selectColor(number) {
+  const hue = number * 137.508; // use golden angle approximation
+  return `hsl(${hue},50%,65%)`;
+}
 
 function App() {
   return (
@@ -73,7 +79,7 @@ class Timer extends React.Component {
     let minutes = Math.floor(secs / 60);
     let seconds = secs - (minutes * 60);
 
-    seconds = seconds.toFixed(2)
+    seconds = Math.floor(seconds.toFixed(2))
     if (seconds < 10) {
       seconds = "0" + seconds;
     }
@@ -94,7 +100,7 @@ class Timer extends React.Component {
     for (let i = 0; i < numPlayers; i++) {
       players = players.concat({
         seconds: initialSeconds,
-        color: COLORS[i],
+        color: selectColor(i),
       })
     } 
     return players;
@@ -180,30 +186,28 @@ class Timer extends React.Component {
     console.log(this.state);
     if (this.state.screen === 1) {
       return (
-        <div className="wrapper">
-          <div className="form-wrapper">
-            <div className="form">
-              <b>Number of players: </b>
-              <select defaultValue="3" onChange={this.numPlayersChange}>
-                <option value="2">2</option>
-                <option value="3">3</option>
-                <option value="4">4</option>
-                <option value="5">5</option>
-              </select>
-              <br />
-              <b>Initial timer: </b>
-              <select defaultValue="10" onChange={this.initialTimeChange}>
-                <option value="0.5">0.5</option>
-                <option value="1">1</option>
-                <option value="5">5</option>
-                <option value="10">10</option>
-                <option value="15">15</option>
-                <option value="20">20</option>
-              </select>
-            </div>
-          
-          <Button className="button" variant="contained" onClick={this.createTimers}>Create Timers</Button>
+        <div className="form-wrapper">
+          <div className="form">
+            <b>Number of players: </b>
+            <select defaultValue="3" onChange={this.numPlayersChange}>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+            </select>
+            <br />
+            <b>Initial timer: </b>
+            <select defaultValue="10" onChange={this.initialTimeChange}>
+              <option value="0.5">0.5</option>
+              <option value="1">1</option>
+              <option value="5">5</option>
+              <option value="10">10</option>
+              <option value="15">15</option>
+              <option value="20">20</option>
+            </select>
           </div>
+        
+        <Button className="button" variant="contained" onClick={this.createTimers}>Create Timers</Button>
         </div>
       );
     } 
@@ -211,17 +215,23 @@ class Timer extends React.Component {
       return (
         <div className="timer-wrapper">
             {this.state.players.map((player, i) => {
-              return <div key={i} 
-                          className={i === this.state.currentPlayer ? "selected" : "unselected"} 
-                          style={{backgroundColor: player.color}}
-                          onClick={this.switchPlayer}>
+              return (
+                <div key={i} 
+                     className={i === this.state.currentPlayer ? "selected" : "unselected"} 
+                     style={{backgroundColor: player.color}}
+                     onClick={this.switchPlayer}>
                   Player {i+1}: {this.secondsToTime(player.seconds)}
                 </div>
-            })}
-          <div>
+              )})}
+          {/* <div>
             <Button variant="contained" onClick={this.toggleTimer}>{this.state.timerActive ? "Pause" : "Start"}</Button>
             <Button variant="contained" onClick={this.switchPlayer}>Next Player</Button>
-          </div>
+          </div> */}
+          <Fab id="fab" 
+               positionMode="absolute" 
+               onClick={this.toggleTimer}>
+            {this.state.timerActive ? "Pause" : "Start"}
+          </Fab>
         </div> 
       );
     }

@@ -42,12 +42,6 @@
   }
 }
 
-.wrapper {
-  display: flex;
-  flex-direction: row;
-  height: 100%;
-}
-
 .form-wrapper {
   width: 100%;
   background-color: #686c74;
@@ -71,18 +65,26 @@
 .selected, .unselected {
   background-color: white;
   border: gray;
-  text-align: center;
   display: flex;
   justify-content: center;
   align-items: center;
+  padding: 0px 30px;
+  transition: all 0.25s;
 }
 
 .selected {
   flex: 3;
-  font-size: 6em;
+  font-size: 5em;
+  font-weight: bold;
 }
 
 .unselected {
   flex: 1;
-  font-size: 3em;
+  font-size: 2.5em;
+  font-weight: normal;
+}
+
+#fab {
+  position: fixed;
+  margin: 8px;
 }
